@@ -13,8 +13,8 @@ def get_args():
         parser.add_argument('length', metavar='length', type=int, help='Enter the max length of plaintext password')
         parser.add_argument('columns', metavar='columns', type=int, help='Enter the length of a chain')
         parser.add_argument('rows', metavar='rows', type=int, help='Enter the amount of rows')
-        parser.add_argument('restrictions', metavar='restrictions', type=str, choices=['lowercase', 'uppercase', 'lettters', 'special', 'alphanum', 'all'] , help='Enter password restrictions - lowercase, uppercase, lettters, special, alphanum, all')
-        parser.add_argument('algorithm', metavar='algorithm', type=str, help='Select a hashing algorihm')
+        parser.add_argument('restrictions', metavar='restrictions', type=str, choices=['lowercase', 'uppercase', 'letters', 'special', 'alphanum', 'all'] , help='Enter password restrictions - lowercase, uppercase, lettters, special, alphanum, all')
+        parser.add_argument('algorithm', metavar='algorithm', type=str, help='Select a hashing algorihm, e.g. md5, sha1, sha256, sha512')
 
     args = parser.parse_args()
     return args
