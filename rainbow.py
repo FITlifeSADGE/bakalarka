@@ -91,7 +91,7 @@ def gen_all(n):
 # Reduction functions
 def reduce_lower(n):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) * col) % (26 ** n)
+        plaintextKey = (int(hash, 16) ^ col) % (26 ** n)
         plaintext = ""
         for _ in range(n):
             plaintext += string.ascii_lowercase[plaintextKey % 26]
@@ -101,7 +101,7 @@ def reduce_lower(n):
 
 def reduce_upper(n):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) * col) % (26 ** n)
+        plaintextKey = (int(hash, 16) ^ col) % (26 ** n)
         plaintext = ""
         for _ in range(n):
             plaintext += string.ascii_uppercase[plaintextKey % 26]
@@ -111,7 +111,7 @@ def reduce_upper(n):
 
 def reduce_letters(n):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) * col) % (52 ** n)
+        plaintextKey = (int(hash, 16) ^ col) % (52 ** n)
         plaintext = ""
         for _ in range(n):
             plaintext += string.ascii_letters[plaintextKey % 52]
@@ -121,7 +121,7 @@ def reduce_letters(n):
 
 def reduce_special_chars(n):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) * col) % (100 ** n)
+        plaintextKey = (int(hash, 16) ^ col) % (100 ** n)
         plaintext = ""
         for _ in range(n):
             plaintext += string.printable[plaintextKey % 100]
@@ -131,7 +131,7 @@ def reduce_special_chars(n):
 
 def reduce_alphanumeric(n):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) * col) % (62 ** n)
+        plaintextKey = (int(hash, 16) ^ col) % (62 ** n)
         plaintext = ""
         for _ in range(n):
             plaintext += (string.ascii_letters + string.digits)[plaintextKey % 62]
@@ -141,7 +141,7 @@ def reduce_alphanumeric(n):
 
 def reduce_all(n):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) * col) % (110 ** n)
+        plaintextKey = (int(hash, 16) ^ col) % (110 ** n)
         plaintext = ""
         for _ in range(n):
             plaintext += (string.printable + string.digits)[plaintextKey % 110]
@@ -204,11 +204,9 @@ elif args.mode == "gen":
     print(hashing_alg('hello'.encode('utf-8')).hexdigest())
     
     reduction_func, gen_func = get_reduction_func(args.restrictions, args.length)
-    print(reduction_func('21232f297a57a5a743894a0e4a801fc3', 1), gen_func())
+    print(reduction_func('dbfa76ebe513b505c2ec4b3f48b093da', 0), gen_func())
     
-    table = RainbowTable(hashing_alg, args.length, args.restrictions, reduction_func, gen_func)
-    table.gen_table(1000)
-    
-    table.load_table("table.pickle")
-    
-    table.export_csv()
+    table = RainbowTable(hashing_alg, args.columns, reduction_func, gen_func)
+    table.gen_table(rows=args.rows)
+   
+    table.export_csv("table.csv")

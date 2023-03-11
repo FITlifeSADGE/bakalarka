@@ -5,15 +5,14 @@ import csv
 CSV_FIELDNAMES = ['start_point', 'endpoint_hash']
 
 class RainbowTable:
-    def __init__(self, hash_func, chain_len, charset, reduction_func, gen_func):
+    def __init__(self, hash_func, chain_len, reduction_func, gen_func):
+        self.table = {}
         self.hash_func = hash_func
         self.chain_len = chain_len
-        self.charset = charset
         self.gen_func = gen_func
         self.reduction_func = reduction_func
-        self.table = {}
         
-    def gen_table(self, rows, extend=False, pickle_file="table.pickle"):
+    def gen_table(self, pickle_file="RainbowTable.pickle", rows=3*10**6, extend=False):
         startTime = time.time()
         if not extend:
             self.table = {}
