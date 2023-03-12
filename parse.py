@@ -9,6 +9,7 @@ def get_args():
         exit(1)
     if sys.argv[1] == 'crack':
         parser.add_argument('hash', metavar='hash', type=str, help='Enter the hash you want to crack')
+        parser.add_argument('table', metavar='table', type=str, help='Enter the name of a table you want to use')
     elif sys.argv[1] == 'gen':
         parser.add_argument('length', metavar='length', type=int, help='Enter the max length of plaintext password')
         parser.add_argument('columns', metavar='columns', type=int, help='Enter the length of a chain')

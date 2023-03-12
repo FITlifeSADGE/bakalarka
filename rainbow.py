@@ -1,42 +1,9 @@
 import hashlib
-import subprocess
 import random
 import string
 from parse import get_args
 from table import RainbowTable
-
-
-# MD5hash = '21232f297a57a5a743894a0e4a801fc3'
-# SHA256hash = 'b1dff32c41ff49d3c05a9e4e2abe95acfadd6212c0cd763f25369972a2a09b43'
-
-# def find_hash_type(hash: str) -> str:
-#     types = subprocess.check_output(['python3 hash-id.py ' + hash], shell=True).strip()
-#     types = str(types)
-#     index = types.find(']')
-#     types = types[index + 2:]
-
-
-#     hash_type = ''
-#     counter = 0
-#     while True:
-#         if types[counter] == '[':
-#             break
-#         hash_type = hash_type + types[counter]
-#         counter += 1
-
-#     hash_type = hash_type[0:-2]
-
-#     return hash_type
-
-# def enter_hash_type():
-#     type = input('Enter hash type: ')
-#     return type
-
-# hash_type = enter_hash_type()
-# print(hash_type)
-# hash_type = find_hash_type(MD5hash)
-# print(hash_type)
-
+import time
 
 # Word generator functions
 def gen_lower(n):
@@ -171,7 +138,7 @@ def get_reduction_func(input: str, n: int):
         return reduce_letters(n), gen_letters(n)
     elif input == 'special':
         return reduce_special_chars(n), gen_special_chars(n)
-    elif input == 'alphanumeric':
+    elif input == 'alphanum':
         return reduce_alphanumeric(n), gen_alphanumeric(n)
     elif input == 'all':
         return reduce_all(n), gen_all(n)
@@ -181,16 +148,20 @@ def get_reduction_func(input: str, n: int):
     
 
 args = get_args()
-
-print(args.mode)
-
 if args.mode == "crack":
-    print("cracking mode")
+    table = RainbowTable(hashlib.md5, 10, reduce_lower(5), gen_lower(5), "md5", "lowercase", 5)
+    table.load_from_cvs(filename=args.table)
+    hashing_alg = get_hashing_alg(table.alg)
+    reduction_func, _ = get_reduction_func(table.rest, table.len)
+    table.hash_func = hashing_alg
+    table.chain_len = int(table.get_chain_len())
+    table.reduction_func = reduction_func
+    
+    print(table.crack(args.hash))
     
     
     
 elif args.mode == "gen":
-    print("generating mode")
     if args.length < 1:
         print("Length must be greater than 0")
         exit(1)
@@ -201,12 +172,24 @@ elif args.mode == "gen":
         print("Number of rows must be greater than 0")
         exit(1)
     hashing_alg = get_hashing_alg(args.algorithm)
-    print(hashing_alg('hello'.encode('utf-8')).hexdigest())
-    
     reduction_func, gen_func = get_reduction_func(args.restrictions, args.length)
-    print(reduction_func('dbfa76ebe513b505c2ec4b3f48b093da', 0), gen_func())
     
-    table = RainbowTable(hashing_alg, args.columns, reduction_func, gen_func)
-    table.gen_table(rows=args.rows)
-   
-    table.export_csv("table.csv")
+    table = RainbowTable(hashing_alg, args.columns, reduction_func, gen_func, args.algorithm, args.restrictions, args.length)
+    table.gen_table(rows=args.rows, file="table.csv")
+    #table.load_from_cvs(filename="lowercase_md5_5.csv")
+    lowercase_md5_5 = ['8b712063688bfd433d3362f2633f9a0a', 'c67fe96a412465a5573125fb88ff5a65', '6656910800c58e1e9e6bc8230805a381', '181fddda8e43336070176f2df7c90a55']
+    
+    uppercase_md5_5 = ['c423ecf794014e15e584585eb0d9f150', '8abb5fdd82d4289310fb9396d9a61a6c', '7225950dd173633a9d577a8eb17c2706', '6ef15de7cf0589256fdc4bdddfabdeed']
+    
+    #python3 rainbow.py gen 5 5000 10000 lowercase 
+    # for hash in lowercase_md5_5:
+    #     start = time.time()
+    #     print(table.crack(hash))
+    #     print("""Found in {0} seconds""".format(time.time() - start))
+    
+    # python3 rainbow.py gen 5 10000 20000 uppercase md5
+    # for hash in uppercase_md5_5:
+    #     start = time.time()
+    #     print(table.crack(hash))
+    #     print("""Found in {0} seconds""".format(time.time() - start))
+    
