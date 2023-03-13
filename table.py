@@ -1,8 +1,16 @@
 import time
 import pickle
 import csv
+from tqdm import tqdm
+from os import system, name
 
 CSV_FIELDNAMES = ['start_point', 'endpoint_hash']
+
+def clear():
+    if name == 'nt':
+        _ = system('cls')
+    else:
+        _ = system('clear')
 
 class RainbowTable:
     def __init__(self, hash_func, chain_len, reduction_func, gen_func, alg, restrictions, length):
@@ -16,14 +24,17 @@ class RainbowTable:
         self.len = length
         
     def gen_table(self, file="table.csv", rows=1000):
+        print("Generating table...")
         startTime = time.time()
-        for i in range(rows):
+        for i in tqdm(range(rows)):
             start = self.gen_func()
-            
             plainText = start
             for col in range(self.chain_len):
                 hashcode = self.hash_func(plainText.encode('utf-8')).hexdigest()
+                print(hashcode)
                 plainText = self.reduction_func(hashcode, col)
+                print(plainText)
+            print("FIN")
             self.table[hashcode] = start
             
         self.table['chain_len'] = self.chain_len
@@ -38,7 +49,7 @@ class RainbowTable:
                 writer.writerow({CSV_FIELDNAMES[0]: v, CSV_FIELDNAMES[1]: k})
         
         elapsed = time.time() - startTime
-        print("Done generating in {0} seconds.".format(elapsed))
+        print("Done generating in {0} seconds.".format(elapsed), flush=True)
                 
     def recreate_chain(self, hashedPassword, start):
         for col in range(self.chain_len):
@@ -50,13 +61,19 @@ class RainbowTable:
         return None
 
     def crack(self, hashedPassword):
-        for startCol in range(self.chain_len-1, -1, -1):
+        print("Searching for a match in Rainbow Table, progress bar represents worst case scenario...")
+        if hashedPassword in self.table:
+            traversalResult = self.recreate_chain(hashedPassword, self.table[hashedPassword])
+            if traversalResult:
+                return traversalResult
+        for startCol in tqdm(range(self.chain_len-1, -1, -1)):
             candidate = hashedPassword
             for col in range(startCol, self.chain_len):
                 candidate = self.hash_func(self.reduction_func(candidate, col-1).encode('utf-8')).hexdigest()
             if candidate in self.table:
                 traversalResult = self.recreate_chain(hashedPassword, self.table[candidate])
                 if traversalResult:
+
                     return traversalResult
  
     def load_from_cvs(self, filename="RainbowTable.csv"):
