@@ -31,10 +31,7 @@ class RainbowTable:
             plainText = start
             for col in range(self.chain_len):
                 hashcode = self.hash_func(plainText.encode('utf-8')).hexdigest()
-                print(hashcode)
                 plainText = self.reduction_func(hashcode, col)
-                print(plainText)
-            print("FIN")
             self.table[hashcode] = start
             
         self.table['chain_len'] = self.chain_len

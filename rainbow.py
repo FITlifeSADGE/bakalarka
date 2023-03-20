@@ -3,9 +3,16 @@ import random
 import string
 from parse import get_args
 from table import RainbowTable, clear
-import time
+import data
+import pathlib
 
 usual_password_len = 8
+
+def writeTofile(data, filename):
+    # Convert binary data to proper format and write it on Hard Disk
+    with open(filename, 'wb') as file:
+        file.write(data)
+    print("Stored rainbow table data into: ", filename)
 
 # Word generator functions
 def gen_lower(n):
@@ -184,7 +191,7 @@ def get_reduction_func(input: str, n: int):
         print("This reduction function is not supported")
         exit(1)
     
-
+    
 args = get_args()
 if args.mode == "crack":
     table = RainbowTable(hashlib.md5, 10, reduce_lower(5), gen_lower(5), "md5", "lowercase", 5)
@@ -194,7 +201,6 @@ if args.mode == "crack":
     table.hash_func = hashing_alg
     table.chain_len = int(table.table['chain_len'])
     table.reduction_func = reduction_func
-    
     result = table.crack(args.hash)
     if result is not None:
         #clear()
@@ -218,5 +224,33 @@ elif args.mode == "gen":
     reduction_func, gen_func = get_reduction_func(args.restrictions, args.length)
     
     table = RainbowTable(hashing_alg, args.columns, reduction_func, gen_func, args.algorithm, args.restrictions, args.length)
-    table.gen_table(rows=args.rows, file="table.csv")
+    table.gen_table(rows=args.rows, file=args.filename)
+    
+    data.add_table_to_database(table, args.filename)
+    
+elif args.mode == "search":
+    res = data.get_tables(args.algorithm, args.restrictions, args.length)
+    print("Found {0} tables".format(len(res)))
+    for table in res:
+        print("name : {0}, number of tries: {1}, successful tries: {2}, password length up to {3} characters, ID: {4}".format(table[0], table[1], table[2], table[4], table[3]))
+        print("Select a table using load path ID")
+    
+elif args.mode == "load":
+    name = data.fetch_table(args.ID)
+    path = args.path + "/" + name[0][1]
+    if pathlib.Path(path).is_file():
+        print("File already exists, are you sure you want to rewrite it? (y/n)")
+        inp = input()
+        if inp == "y":
+            writeTofile(name[0][0], path)
+        elif inp == "n":
+            print("Exiting...")
+            exit(0)
+        else: 
+            print("Invalid input, exiting...")
+            exit(0)
+    else:
+        print("Downloading file...")
+        writeTofile(name[0][0], path)
+        print("Done")
     
