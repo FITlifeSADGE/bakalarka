@@ -65,99 +65,75 @@ def gen_all(n):
 
 
 # Reduction functions
-def reduce_lower(n):
+def reduce_lower(lower, upper):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) ^ col) % (26 ** n)
+        plaintextKey = (int(hash, 16) ^ col) % (26 ** lower)
         plaintext = ""
-        if n > usual_password_len:
-            rang = plaintextKey % (n - usual_password_len + 1) + usual_password_len
-            for _ in range(rang):
-                plaintext += string.ascii_lowercase[plaintextKey % 26]
-                plaintextKey //= 26
-        else:
-            for _ in range(n):
-                plaintext += string.ascii_lowercase[plaintextKey % 26]
-                plaintextKey //= 26
+        diff = upper - lower
+        rang = plaintextKey % (diff + 1) + lower
+        for _ in range(rang):
+            plaintext += string.ascii_lowercase[plaintextKey % 26]
+            plaintextKey //= 26
         return plaintext
     return result
 
-def reduce_upper(n):
+def reduce_upper(lower, upper):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) ^ col) % (26 ** n)
+        plaintextKey = (int(hash, 16) ^ col) % (26 ** lower)
         plaintext = ""
-        if n > usual_password_len:
-            rang = plaintextKey % (n - usual_password_len + 1) + usual_password_len
-            for _ in range(rang):
-                plaintext += string.ascii_uppercase[plaintextKey % 26]
-                plaintextKey //= 26
-        else:
-            for _ in range(n):
-                plaintext += string.ascii_uppercase[plaintextKey % 26]
-                plaintextKey //= 26
+        diff = upper - lower
+        rang = plaintextKey % (diff + 1) + lower
+        for _ in range(rang):
+            plaintext += string.ascii_uppercase[plaintextKey % 26]
+            plaintextKey //= 26
         return plaintext
     return result
 
-def reduce_letters(n):
+def reduce_letters(lower, upper):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) ^ col) % (52 ** n)
+        plaintextKey = (int(hash, 16) ^ col) % (52 ** lower)
         plaintext = ""
-        if n > usual_password_len:
-            rang = plaintextKey % (n - usual_password_len + 1) + usual_password_len
-            for _ in range(rang):
-                plaintext += string.ascii_letters[plaintextKey % 52]
-                plaintextKey //= 52
-        else:
-            for _ in range(n):
-                plaintext += string.ascii_letters[plaintextKey % 52]
-                plaintextKey //= 52
+        diff = upper - lower
+        rang = plaintextKey % (diff + 1) + lower
+        for _ in range(rang):
+            plaintext += string.ascii_letters[plaintextKey % 52]
+            plaintextKey //= 52
         return plaintext
     return result
 
-def reduce_special_chars(n):
+def reduce_special_chars(lower, upper):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) ^ col) % (100 ** n)
+        plaintextKey = (int(hash, 16) ^ col) % (100 ** lower)
         plaintext = ""
-        if n > usual_password_len:
-            rang = plaintextKey % (n - usual_password_len + 1) + usual_password_len
-            for _ in range(rang):
-                plaintext += string.printable[plaintextKey % 100]
-                plaintextKey //= 100
-        else:
-            for _ in range(n):
-                plaintext += string.printable[plaintextKey % 100]
-                plaintextKey //= 100
+        diff = upper - lower
+        rang = plaintextKey % (diff + 1) + lower
+        for _ in range(rang):
+            plaintext += string.printable[plaintextKey % 100]
+            plaintextKey //= 100
         return plaintext
     return result
 
-def reduce_alphanumeric(n):
+def reduce_alphanumeric(lower, upper):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) ^ col) % (62 ** n)
+        plaintextKey = (int(hash, 16) ^ col) % (62 ** lower)
         plaintext = ""
-        if n > usual_password_len:
-            rang = plaintextKey % (n - usual_password_len + 1) + usual_password_len
-            for _ in range(rang):
-                plaintext += (string.ascii_letters + string.digits)[plaintextKey % 62]
-                plaintextKey //= 62
-        else:
-            for _ in range(n):
-                plaintext += (string.ascii_letters + string.digits)[plaintextKey % 62]
-                plaintextKey //= 62
+        diff = upper - lower
+        rang = plaintextKey % (diff + 1) + lower
+        for _ in range(rang):
+            plaintext += (string.ascii_letters + string.digits)[plaintextKey % 62]
+            plaintextKey //= 62
         return plaintext
     return result
 
-def reduce_all(n):
+def reduce_all(lower, upper):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) ^ col) % (110 ** n)
+        plaintextKey = (int(hash, 16) ^ col) % (110 ** lower)
         plaintext = ""
-        if n > usual_password_len:
-            rang = plaintextKey % (n - usual_password_len + 1) + usual_password_len
-            for _ in range(rang):
-                plaintext += (string.printable + string.digits)[plaintextKey % 110]
-                plaintextKey //= 110
-        else:
-            for _ in range(n):
-                plaintext += (string.printable + string.digits)[plaintextKey % 110]
-                plaintextKey //= 110
+        diff = upper - lower
+        rang = plaintextKey % (diff + 1) + lower
+        for _ in range(rang):
+            plaintext += (string.printable + string.digits)[plaintextKey % 110]
+            plaintextKey //= 110
         return plaintext
     return result
 
@@ -174,19 +150,19 @@ def get_hashing_alg(input: str):
         print("This hashing algorithm is not supported")
         exit(1)
         
-def get_reduction_func(input: str, n: int):
+def get_reduction_func(input: str, lower: int, upper: int):
     if input == 'lowercase':
-        return reduce_lower(n), gen_lower(n)
+        return reduce_lower(lower, upper), gen_lower(lower), string.ascii_lowercase
     elif input == 'uppercase':
-        return reduce_upper(n), gen_upper(n)
+        return reduce_upper(lower, upper), gen_upper(lower), string.ascii_uppercase
     elif input == 'letters':
-        return reduce_letters(n), gen_letters(n)
+        return reduce_letters(lower, upper), gen_letters(lower), string.ascii_letters
     elif input == 'special':
-        return reduce_special_chars(n), gen_special_chars(n)
+        return reduce_special_chars(lower, upper), gen_special_chars(lower), string.printable
     elif input == 'alphanum':
-        return reduce_alphanumeric(n), gen_alphanumeric(n)
+        return reduce_alphanumeric(lower, upper), gen_alphanumeric(lower), string.ascii_letters + string.digits
     elif input == 'all':
-        return reduce_all(n), gen_all(n)
+        return reduce_all(lower, upper), gen_all(lower), string.printable + string.digits
     else:
         print("This reduction function is not supported")
         exit(1)
@@ -194,24 +170,34 @@ def get_reduction_func(input: str, n: int):
     
 args = get_args()
 if args.mode == "crack":
-    table = RainbowTable(hashlib.md5, 10, reduce_lower(5), gen_lower(5), "md5", "lowercase", 5)
+    plaintext = data.search_password(args.hash)
+    if plaintext:
+        print("Password found in database: {0}".format(plaintext[0]))
+        exit(0)
+    
+    table = RainbowTable(hashlib.md5, 10, reduce_lower(5, 10), gen_lower(5), "md5", "lowercase", 5, 6)
     table.load_from_cvs(filename=args.table)
     hashing_alg = get_hashing_alg(table.table['alg'])
-    reduction_func, _ = get_reduction_func(table.table['rest'], int(table.table['len']))
+    reduction_func, _, _ = get_reduction_func(table.table['rest'], int(table.table['len']), int(table.table['len_max']))
     table.hash_func = hashing_alg
     table.chain_len = int(table.table['chain_len'])
     table.reduction_func = reduction_func
     result = table.crack(args.hash)
+    
+    id = data.get_table_id(args.table)
+    
     if result is not None:
         #clear()
         print("Succes, the password is {0}".format(result))
+        data.update_table(True, id)
+        data.add_password_to_database(args.hash, result)
     else:
         #clear()
         print("Password not found")
-    
+        data.update_table(False, id) 
     
 elif args.mode == "gen":
-    if args.length < 1:
+    if args.length_max < 1:
         print("Length must be greater than 0")
         exit(1)
     if args.columns < 1:
@@ -220,23 +206,49 @@ elif args.mode == "gen":
     if args.rows < 1:
         print("Number of rows must be greater than 0")
         exit(1)
+    if args.length_min > args.length_max:
+        print("Minimum length must be less than maximum length")
+        exit(1)
+    if args.length_min < 5:
+        print("Minimum length of less than 5 results in many collisions, which can cause the table to be unusable")
+        print("do you wish to continue? (y/n)")
+        inp = input()
+        if inp != "y":
+            exit(1)
     hashing_alg = get_hashing_alg(args.algorithm)
-    reduction_func, gen_func = get_reduction_func(args.restrictions, args.length)
+    reduction_func, gen_func, charset = get_reduction_func(args.restrictions, args.length_min, args.length_max)
     
-    table = RainbowTable(hashing_alg, args.columns, reduction_func, gen_func, args.algorithm, args.restrictions, args.length)
+    table = RainbowTable(hashing_alg, args.columns, reduction_func, gen_func, args.algorithm, args.restrictions, args.length_min, args.length_max)
+    if args.filename[-4:] != ".csv":
+        args.filename += ".csv"
     table.gen_table(rows=args.rows, file=args.filename)
     
     data.add_table_to_database(table, args.filename)
     
+    print("""rainbow table {3} parameters:
+          hash algorithm:   {0}
+          charset name:     {1}
+          charset length:   {2}
+          charset data:     {4}
+        """.format(args.algorithm, args.restrictions, len(charset), args.filename, charset))
+    
 elif args.mode == "search":
-    res = data.get_tables(args.algorithm, args.restrictions, args.length)
+    res = data.get_tables(args.algorithm, args.restrictions, args.length_min, args.length_max)
     print("Found {0} tables".format(len(res)))
     for table in res:
-        print("name : {0}, number of tries: {1}, successful tries: {2}, password length up to {3} characters, ID: {4}".format(table[0], table[1], table[2], table[4], table[3]))
+        print("""
+              name :                    {0}
+              number of tries:          {1}
+              successful tries:         {2}
+              password length range:    {3} to {4} characters
+              ID:                       {5}""".format(table[0], table[1], table[2], table[4], table[5], table[3]))
         print("Select a table using load path ID")
     
 elif args.mode == "load":
     name = data.fetch_table(args.ID)
+    if not name:
+        print("No table with this ID")
+        exit(1)
     path = args.path + "/" + name[0][1]
     if pathlib.Path(path).is_file():
         print("File already exists, are you sure you want to rewrite it? (y/n)")

@@ -13,7 +13,7 @@ def clear():
         _ = system('clear')
 
 class RainbowTable:
-    def __init__(self, hash_func, chain_len, reduction_func, gen_func, alg, restrictions, length):
+    def __init__(self, hash_func, chain_len, reduction_func, gen_func, alg, restrictions, length_min, length_max):
         self.table = {}
         self.hash_func = hash_func
         self.chain_len = chain_len
@@ -21,7 +21,8 @@ class RainbowTable:
         self.reduction_func = reduction_func
         self.alg = alg
         self.rest = restrictions
-        self.len = length
+        self.len = length_min
+        self.len_max = length_max
         
     def gen_table(self, file="table.csv", rows=1000):
         print("Generating table...")
@@ -38,6 +39,7 @@ class RainbowTable:
         self.table['alg'] = self.alg
         self.table['rest'] = self.rest
         self.table['len'] = self.len
+        self.table['len_max'] = self.len_max
         
         with open(file, 'w') as table:
             writer = csv.DictWriter(table, fieldnames=CSV_FIELDNAMES) 

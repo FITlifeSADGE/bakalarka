@@ -2,7 +2,7 @@ import argparse
 import sys
 
 def get_args():
-    parser = argparse.ArgumentParser(description='Supported modes - crack, gen, search, load. For more details enter crack -h, gen -h,search -h or load-h' )
+    parser = argparse.ArgumentParser(description='Supported modes - crack, gen, search, load. For more details enter crack -h, gen -h,search -h or load-h', add_help=False )
     parser.add_argument('mode', metavar='mode', type=str, choices=['crack', 'gen', 'search', 'load'], help='Select a function - crack/gen/search')
     if len(sys.argv) < 2:
         print('Plese select a mode - options: crack, gen, search, load')
@@ -11,16 +11,27 @@ def get_args():
         parser.add_argument('hash', metavar='hash', type=str, help='Enter the hash you want to crack')
         parser.add_argument('table', metavar='table', type=str, help='Enter the name of a table you want to use')
     elif sys.argv[1] == 'gen':
-        parser.add_argument('length', metavar='length', type=int, help='Enter the max length of plaintext password')
-        parser.add_argument('columns', metavar='columns', type=int, help='Enter the length of a chain')
-        parser.add_argument('rows', metavar='rows', type=int, help='Enter the amount of rows')
-        parser.add_argument('restrictions', metavar='restrictions', type=str, choices=['lowercase', 'uppercase', 'letters', 'special', 'alphanum', 'all'] , help='Enter password restrictions - lowercase, uppercase, lettters, special, alphanum, all')
-        parser.add_argument('algorithm', metavar='algorithm', type=str, help='Select a hashing algorihm, e.g. md5, sha1, sha256, sha512')
+        parser.add_argument('algorithm', metavar='hash_algorithm', type=str, help='Select a hashing algorihm, e.g. md5, sha1, sha256, sha512')
+        parser.add_argument('restrictions', metavar='charset', type=str, choices=['lowercase', 'uppercase', 'letters', 'special', 'alphanum', 'all', 'test'] , help='Enter password restrictions - lowercase, uppercase, lettters, special, alphanum, all')
+        parser.add_argument('length_min', metavar='plaintext_length_min', type=int, help='Enter the min length of plaintext password')
+        parser.add_argument('length_max', metavar='plaintext_length_max', type=int, help='Enter the max length of plaintext password')
+        parser.add_argument('columns', metavar='chain_len', type=int, help='Enter the length of a chain')
+        parser.add_argument('rows', metavar='chain_num', type=int, help='Enter the amount of rows')
         parser.add_argument('filename', metavar='filename', type=str, help='Enter the name of a file you want to save the table to', default='table.csv')
+        if len(sys.argv) < 9:
+            print('''hash algorithms implemented: 
+                  md5 HashLen=16
+                  sha1 HashLen=20
+                  sha256 HashLen=32
+                  sha512 HashLen=64
+                  
+                  examples:
+                  python3 rainbow.py gen md5 lowercase 5 10 1000 1000 table.csv''')
     elif sys.argv[1] == 'search':
-        parser.add_argument('algorithm', metavar='algorithm', type=str, help='Select a hashing algorihm, e.g. md5, sha1, sha256, sha512')
-        parser.add_argument('restrictions', metavar='restrictions', type=str, choices=['lowercase', 'uppercase', 'letters', 'special', 'alphanum', 'all'] , help='Enter password restrictions - lowercase, uppercase, lettters, special, alphanum, all')
-        parser.add_argument('length', metavar='length', type=int, help='Enter the max length of plaintext password')
+        parser.add_argument('algorithm', metavar='hash_algorithm', type=str, help='Select a hashing algorihm, e.g. md5, sha1, sha256, sha512')
+        parser.add_argument('restrictions', metavar='charset', type=str, choices=['lowercase', 'uppercase', 'letters', 'special', 'alphanum', 'all'] , help='Enter password restrictions - lowercase, uppercase, lettters, special, alphanum, all')
+        parser.add_argument('length_min', metavar='plaintext_length_min', type=int, help='Enter the max length of plaintext password')
+        parser.add_argument('length_max', metavar='plaintext_length_max', type=int, help='Enter the max length of plaintext password')
     elif sys.argv[1] == 'load':
         parser.add_argument('path', metavar='path', type=str, help='Enter the path to the table you want to download')
         parser.add_argument('ID', metavar='ID', type=str, help='Enter the ID of the table you want to download')
