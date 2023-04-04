@@ -74,7 +74,6 @@ class RainbowTable:
             if candidate in self.table:
                 traversalResult = self.recreate_chain(hashedPassword, self.table[candidate])
                 if traversalResult:
-
                     return traversalResult
  
     def load_from_cvs(self, filename="RainbowTable.csv"):

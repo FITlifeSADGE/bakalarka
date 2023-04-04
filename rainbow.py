@@ -13,9 +13,42 @@ def writeTofile(data, filename):
     print("Stored rainbow table data into: ", filename)
     
 # Estimate time to generate a table
-def estimate_gen_time(chain_len, chain_num):
+def estimate_gen_time(chain_len, chain_num, algorithm, charset, max_len):
+    default_chars = 26
+    diff = charset - default_chars
+    multiply_char = 1
+    multiply_alg = 1
+    multiply_len = 1
+    if diff == 26:
+        multiply_char = 1.03
+    elif diff == 74:
+        multiply_char = 1.05
+    elif diff == 36:
+        multiply_char = 1.1
+    elif diff == 84:
+        multiply_char = 1.25
+        
+    if algorithm == "sha1":
+        multiply_alg = 1.03
+    elif algorithm == "sha256":
+        multiply_alg = 1.03
+    elif algorithm == "sha512":
+        multiply_alg = 1.15
+        
+    if max_len <= 5:
+        multiply_len = 0.85
+    elif max_len <= 10:
+        multiply_len = 1
+    elif max_len <= 15:
+        multiply_len = 1.05
+    elif max_len <= 20:
+        multiply_len = 1.15
+    elif max_len <= 25:
+        multiply_len = 1.33
+    elif max_len <= 30:
+        multiply_len = 1.45
     hashes_per_sec = 300000
-    return((chain_len * chain_num) / hashes_per_sec)
+    return((chain_len * chain_num * multiply_char * multiply_alg * multiply_len) / hashes_per_sec)
 
 # Check if given arguments are valid
 def check_args_gen(args):
@@ -260,7 +293,7 @@ elif args.mode == "gen":
     table = RainbowTable(hashing_alg, args.columns, reduction_func, gen_func, args.algorithm, args.restrictions, args.length_min, args.length_max)
     if args.filename[-4:] != ".csv": # Add .csv to filename if not present
         args.filename += ".csv"
-    estimate = estimate_gen_time(args.rows, args.columns)
+    estimate = estimate_gen_time(args.rows, args.columns, args.algorithm, len(charset), args.length_max)
     print("Estimated time to generate table assuming average CPU : {0} mins, {1} seconds".format(int(estimate/60), int(estimate % 60)))
     print("Do you wish to continue? (y/n)")
     inp = input()
