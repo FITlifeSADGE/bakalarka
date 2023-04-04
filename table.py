@@ -1,8 +1,8 @@
 import time
-import pickle
 import csv
 from tqdm import tqdm
 from os import system, name
+import pathlib
 
 CSV_FIELDNAMES = ['start_point', 'endpoint_hash']
 
@@ -41,7 +41,9 @@ class RainbowTable:
         self.table['len'] = self.len
         self.table['len_max'] = self.len_max
         
-        with open(file, 'w') as table:
+        if not pathlib.Path("/usr/share/collections/RTables/").exists():
+            pathlib.Path("/usr/share/collections/RTables/").mkdir(parents=True, exist_ok=True)
+        with open("/usr/share/collections/RTables/"+file, 'w') as table:
             writer = csv.DictWriter(table, fieldnames=CSV_FIELDNAMES) 
             writer.writeheader()
             for k, v in self.table.items():
@@ -77,6 +79,9 @@ class RainbowTable:
  
     def load_from_cvs(self, filename="RainbowTable.csv"):
         self.table = {}
+        if not pathlib.Path(filename).exists():
+            print("File not found, please check the path and try again.")
+            exit(1)
         with open(filename, 'r') as table:
             reader = csv.DictReader(table)
             for row in reader:

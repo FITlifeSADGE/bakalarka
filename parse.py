@@ -10,6 +10,16 @@ def get_args():
     if sys.argv[1] == 'crack':
         parser.add_argument('hash', metavar='hash', type=str, help='Enter the hash you want to crack')
         parser.add_argument('table', metavar='table', type=str, help='Enter the name of a table you want to use')
+        parser.add_argument('-p', '--path', metavar='path', type=str, help='Enter the path to the table', default='/usr/share/collections/RTables/')
+        if len(sys.argv) < 4:
+            print('''hash algorithms implemented: 
+                  md5 HashLen=16
+                  sha1 HashLen=20
+                  sha256 HashLen=32
+                  sha512 HashLen=64
+                  
+                  examples:
+                  python3 rainbow.py crack 098f6bcd4621d373cade4e832627b4f6 table.csv [-p path]''')
     elif sys.argv[1] == 'gen':
         parser.add_argument('algorithm', metavar='hash_algorithm', type=str, help='Select a hashing algorihm, e.g. md5, sha1, sha256, sha512')
         parser.add_argument('restrictions', metavar='charset', type=str, choices=['lowercase', 'uppercase', 'letters', 'special', 'alphanum', 'all', 'test'] , help='Enter password restrictions - lowercase, uppercase, lettters, special, alphanum, all')
@@ -32,9 +42,22 @@ def get_args():
         parser.add_argument('restrictions', metavar='charset', type=str, choices=['lowercase', 'uppercase', 'letters', 'special', 'alphanum', 'all'] , help='Enter password restrictions - lowercase, uppercase, lettters, special, alphanum, all')
         parser.add_argument('length_min', metavar='plaintext_length_min', type=int, help='Enter the max length of plaintext password')
         parser.add_argument('length_max', metavar='plaintext_length_max', type=int, help='Enter the max length of plaintext password')
+        if len(sys.argv) < 6:
+            print('''hash algorithms implemented: 
+                  md5 HashLen=16
+                  sha1 HashLen=20
+                  sha256 HashLen=32
+                  sha512 HashLen=64
+                  
+                  examples:
+                  python3 rainbow.py search md5 lowercase 5 10''')
     elif sys.argv[1] == 'load':
         parser.add_argument('path', metavar='path', type=str, help='Enter the path to the table you want to download')
         parser.add_argument('ID', metavar='ID', type=str, help='Enter the ID of the table you want to download')
+        if len(sys.argv) < 4:
+            print('''
+                  examples:
+                  python3 rainbow.py load . 1''')
     args = parser.parse_args()
     return args
 

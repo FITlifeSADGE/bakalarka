@@ -2,17 +2,59 @@ import hashlib
 import random
 import string
 from parse import get_args
-from table import RainbowTable, clear
+from table import RainbowTable
 import data
 import pathlib
-
-usual_password_len = 8
 
 def writeTofile(data, filename):
     # Convert binary data to proper format and write it on Hard Disk
     with open(filename, 'wb') as file:
         file.write(data)
     print("Stored rainbow table data into: ", filename)
+    
+# Estimate time to generate a table
+def estimate_gen_time(chain_len, chain_num):
+    hashes_per_sec = 300000
+    return((chain_len * chain_num) / hashes_per_sec)
+
+# Check if given arguments are valid
+def check_args_gen(args):
+    if args.length_max < 1:
+        print("Length must be greater than 0")
+        exit(1)
+    if args.length_min < 1:
+        print("Length must be greater than 0")
+        exit(1)
+    if args.length_max > 30:
+        print("Plaintext length is capped at 30")
+        exit(1)
+    if args.length_min > 30:
+        print("Plaintext length is capped at 30")
+    if args.columns < 1:
+        print("Number of columns must be greater than 0")
+        exit(1)
+    if args.rows < 1:
+        print("Number of rows must be greater than 0")
+        exit(1)
+    if args.length_min > args.length_max:
+        print("Minimum length must be less or equal to maximum length")
+        exit(1)
+        
+def check_args_search(args):
+    if args.length_max < 1:
+        print("Length must be greater than 0")
+        exit(1)
+    if args.length_min < 1:
+        print("Length must be greater than 0")
+        exit(1)
+    if args.length_max > 30:
+        print("Plaintext length is capped at 30")
+        exit(1)
+    if args.length_min > 30:
+        print("Plaintext length is capped at 30")
+    if args.length_min > args.length_max:
+        print("Minimum length must be less or equal to maximum length")
+        exit(1)
 
 # Word generator functions
 def gen_lower(n):
@@ -67,10 +109,10 @@ def gen_all(n):
 # Reduction functions
 def reduce_lower(lower, upper):
     def result(hash, col):
-        plaintextKey = (int(hash, 16) ^ col) % (26 ** lower)
+        plaintextKey = (int(hash, 16) ^ col) % (26 ** lower) # Conver hash to number
         plaintext = ""
         diff = upper - lower
-        rang = plaintextKey % (diff + 1) + lower
+        rang = plaintextKey % (diff + 1) + lower # Get Random length
         for _ in range(rang):
             plaintext += string.ascii_lowercase[plaintextKey % 26]
             plaintextKey //= 26
@@ -137,6 +179,7 @@ def reduce_all(lower, upper):
         return plaintext
     return result
 
+# Select hashing algorithm
 def get_hashing_alg(input: str):
     if input == 'md5':
         return hashlib.md5
@@ -149,7 +192,8 @@ def get_hashing_alg(input: str):
     else:
         print("This hashing algorithm is not supported")
         exit(1)
-        
+
+# Select reduction function
 def get_reduction_func(input: str, lower: int, upper: int):
     if input == 'lowercase':
         return reduce_lower(lower, upper), gen_lower(lower), string.ascii_lowercase
@@ -170,13 +214,19 @@ def get_reduction_func(input: str, lower: int, upper: int):
     
 args = get_args()
 if args.mode == "crack":
-    plaintext = data.search_password(args.hash)
+    plaintext = data.search_password(args.hash) # Search for password in database
     if plaintext:
         print("Password found in database: {0}".format(plaintext[0]))
         exit(0)
-    
-    table = RainbowTable(hashlib.md5, 10, reduce_lower(5, 10), gen_lower(5), "md5", "lowercase", 5, 6)
-    table.load_from_cvs(filename=args.table)
+    try: 
+        int(args.hash, 16)
+    except:
+        print("Hash is not in hexadecimal format")
+        exit(1)
+    table = RainbowTable(hashlib.md5, 10, reduce_lower(5, 10), gen_lower(5), "md5", "lowercase", 5, 6) # Create empty table
+    if not args.path.endswith("/"): # Add / to path if not present
+        args.path += "/"
+    table.load_from_cvs(filename= args.path + args.table) # Load table from file
     hashing_alg = get_hashing_alg(table.table['alg'])
     reduction_func, _, _ = get_reduction_func(table.table['rest'], int(table.table['len']), int(table.table['len_max']))
     table.hash_func = hashing_alg
@@ -184,7 +234,7 @@ if args.mode == "crack":
     table.reduction_func = reduction_func
     result = table.crack(args.hash)
     
-    id = data.get_table_id(args.table)
+    id = data.get_table_id(args.table) # Get id of table for later update of values
     
     if result is not None:
         #clear()
@@ -197,18 +247,7 @@ if args.mode == "crack":
         data.update_table(False, id) 
     
 elif args.mode == "gen":
-    if args.length_max < 1:
-        print("Length must be greater than 0")
-        exit(1)
-    if args.columns < 1:
-        print("Number of columns must be greater than 0")
-        exit(1)
-    if args.rows < 1:
-        print("Number of rows must be greater than 0")
-        exit(1)
-    if args.length_min > args.length_max:
-        print("Minimum length must be less than maximum length")
-        exit(1)
+    check_args_gen(args)
     if args.length_min < 5:
         print("Minimum length of less than 5 results in many collisions, which can cause the table to be unusable")
         print("do you wish to continue? (y/n)")
@@ -219,8 +258,20 @@ elif args.mode == "gen":
     reduction_func, gen_func, charset = get_reduction_func(args.restrictions, args.length_min, args.length_max)
     
     table = RainbowTable(hashing_alg, args.columns, reduction_func, gen_func, args.algorithm, args.restrictions, args.length_min, args.length_max)
-    if args.filename[-4:] != ".csv":
+    if args.filename[-4:] != ".csv": # Add .csv to filename if not present
         args.filename += ".csv"
+    estimate = estimate_gen_time(args.rows, args.columns)
+    print("Estimated time to generate table assuming average CPU : {0} mins, {1} seconds".format(int(estimate/60), int(estimate % 60)))
+    print("Do you wish to continue? (y/n)")
+    inp = input()
+    if inp == "n":
+        print("Exiting...")
+        exit(0)
+    elif inp == "y":
+        pass
+    else: 
+        print("Invalid input, exiting...")
+        exit(0)
     table.gen_table(rows=args.rows, file=args.filename)
     
     data.add_table_to_database(table, args.filename)
@@ -233,6 +284,7 @@ elif args.mode == "gen":
         """.format(args.algorithm, args.restrictions, len(charset), args.filename, charset))
     
 elif args.mode == "search":
+    check_args_search(args)
     res = data.get_tables(args.algorithm, args.restrictions, args.length_min, args.length_max)
     print("Found {0} tables".format(len(res)))
     for table in res:
@@ -246,10 +298,13 @@ elif args.mode == "search":
     
 elif args.mode == "load":
     name = data.fetch_table(args.ID)
-    if not name:
+    if not name: # Check if table exists
         print("No table with this ID")
         exit(1)
-    path = args.path + "/" + name[0][1]
+    if not pathlib.Path(args.path).exists(): # Check if path exists
+        print("Path does not exist")
+        exit(0)
+    path = args.path + "/" + name[0][1] # Create path to file
     if pathlib.Path(path).is_file():
         print("File already exists, are you sure you want to rewrite it? (y/n)")
         inp = input()
@@ -265,4 +320,3 @@ elif args.mode == "load":
         print("Downloading file...")
         writeTofile(name[0][0], path)
         print("Done")
-    

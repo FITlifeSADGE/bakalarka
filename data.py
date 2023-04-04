@@ -1,13 +1,13 @@
 import sqlite3
 import table
 
-con = sqlite3.connect('tables.db')
+con = sqlite3.connect('/usr/share/collections/RTables/tables.db')
 cur = con.cursor()
 
 
 def convertToBinaryData(filename):
     # Convert digital data to binary format
-    with open(filename, 'rb') as file:
+    with open("/usr/share/collections/RTables/" + filename, 'rb') as file:
         blobData = file.read()
     return blobData
 
