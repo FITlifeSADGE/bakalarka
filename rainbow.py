@@ -353,3 +353,15 @@ elif args.mode == "load":
         print("Downloading file...")
         writeTofile(name[0][0], path)
         print("Done")
+
+ID_to_delete = 1
+name = data.get_table_name(ID_to_delete)
+if name:
+    name = name[0]
+    file_path = pathlib.Path('/usr/share/collections/RTables/' + name)
+    if not file_path.exists():
+        data.del_from_database(ID_to_delete)
+    else:
+        file_path.unlink()
+        data.del_from_database(ID_to_delete)
+print(name)
