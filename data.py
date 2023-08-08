@@ -4,7 +4,6 @@ import table
 con = sqlite3.connect('/usr/share/collections/RTables/tables.db')
 cur = con.cursor()
 
-
 def convertToBinaryData(filename):
     # Convert digital data to binary format
     with open("/usr/share/collections/RTables/" + filename, 'rb') as file:
@@ -71,4 +70,11 @@ def add_password_to_database(hash: str, plaintext: str):
 def search_password(hash: str):
     cur.execute("SELECT plaintext FROM Password WHERE hash = ?", (hash,))
     return cur.fetchone()
+
+def get_table_name(id: int):
+    cur.execute("SELECT name FROM RainbowTable WHERE id = ?", (id,))
+    return cur.fetchone()
     
+def del_from_database(id: int):
+    cur.execute("DELETE FROM RainbowTable WHERE id = ?", (id,))
+    con.commit()
