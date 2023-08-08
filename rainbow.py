@@ -364,4 +364,3 @@ if name:
     else:
         file_path.unlink()
         data.del_from_database(ID_to_delete)
-print(name)
